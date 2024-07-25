@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from itertools import cycle
+from collections import defaultdict
 
 #define the calendar class which stores the shifts
 class Calendar():
@@ -12,13 +13,16 @@ class Calendar():
         '''
         self.start_date = start_date
         self.end_date = end_date
-        self.date_list = pd.date_range(datetime.strptime(start_date,"%Y-%m-%d"),datetime.strptime(end_date,"%Y-%m-%d"),freq = 'D')
-        self.date_shifts = {} #initialise empty dict
-    def show_dates(self): 
-        '''
-        Displays all dates and their corresponding shifts
-        '''
-        print(self.date_shifts)
+        dates = pd.date_range(start=self.start_date, end = self.end_date).to_list()
+        self.data = pd.DataFrame(dates, columns=["dates"])
+        self.prepare_data()
+    def prepare_data(self):
+        df = self.data.copy()
+        df = df.set_index("dates")
+        df = df.index.to_frame()
+        df["dates"] = df.dates.apply(lambda x: x.day_name())
+        df.rename(columns= {"dates": "day"}, inplace=True)
+        self.data = df
     
     def calculate_shift(self): 
         '''
@@ -42,31 +46,48 @@ class Calendar():
         status = sample[startIdx:]+sample[:startIdx]
         status = cycle(status) #convert to itertable to use next() function
         
-        for date in self.date_list.strftime("%Y-%m-%d"):
-            self.date_shifts[date] = next(status)
+        df = self.data.copy()
+        shifts = []
+        
+        for i in range(len(df.index)):
+            shifts.append(next(status))
+        df["shifts"] = shifts
+        self.data = df
+
     
     def show_shift_on_date(self,date): 
         
         '''
         shows the shift on a specific date. Input to be in 'YYYY-MM-DD' format
         '''
-        print(f'Your shift on {date} is {self.date_shifts[date]}.')
+        bar = self.data.loc[pd.to_datetime(date)].to_frame()
+        return bar
+
     
     def calc_working_days(self,date): 
         '''
         calculate the number of working days from the "date" onwards.
         date input to be in 'YYYY-MM-DD' format
         '''
-        dates = pd.date_range(datetime.strptime(date,"%Y-%m-%d"),datetime.strptime(self.end_date,"%Y-%m-%d"),freq = 'D')
-        total_days = len(dates)
+        day_data = defaultdict(int)
+        working_days = 0
         non_working = 0
-        for date in dates.strftime("%Y-%m-%d"):
-            if self.date_shifts[date] in ['D1','D2']:
+        for i in range(len(self.data.loc[pd.to_datetime(date):])):
+            day,shift = self.data.iloc[i]
+            if shift not in ["D1","D2"]:
+                day_data[day] += 1
+                working_days += 1
+            else:
                 non_working += 1
-        
-        working_days = total_days - non_working
+        #dataframe consisting of working days for each date
+        df = pd.DataFrame(day_data.items(), columns= ["Days","Days Working"])
+        custom_order = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+        df['Days'] = pd.Categorical(df['Days'], categories=custom_order, ordered=True)
+        # Sort DataFrame based on 'Category' column
+        sorted_df = df.sort_values(by='Days')
 
-        print(f'Total:{total_days}, working:{working_days}, non working :{non_working}')
+        print(f'Total:{working_days+non_working}, working:{working_days}, non working :{non_working}')
+        print(sorted_df.to_markdown(index=False))
             
 
 
