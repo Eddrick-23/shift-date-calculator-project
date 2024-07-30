@@ -25,27 +25,103 @@ class Calendar():
         df["dates"] = df.dates.apply(lambda x: x.day_name())
         df.rename(columns= {"dates": "day"}, inplace=True)
         self.data = df
-    
+    def get_shift_info(self):
+        '''
+            gets user shift cycle information
+        '''
+        quit = False
+        #get cycle size: x in x out
+        while True:
+            try:
+                comb = input("How many days in and out? (X in,X out)")
+                if comb in ["Quit","quit"]:
+                    quit = True
+                    break
+                incamp, outcamp = map(int, comb.split(","))
+            except:
+                print("Please enter an integer")
+                print("Enter values in the format Days in, Days out. e.g. 2,3 for 2 days in 3 days out.")
+            if incamp <=0:
+                print("Days in must be at least 1!")
+                continue
+            if outcamp <=0:
+                print("Days out must be at least 1!")
+                continue
+            break
+        
+        if quit:
+            print("Quitting!")
+            return
+        #get what a typical cycle is like e.g. in1,in2,out1,out2
+        cycle_length = incamp + outcamp
+        while True:
+            sample = input("In 1 cycle, what is the sequence of shifts? Enter the shifts seperated by commas. E.g. in1,in2,out1: ")
+            if sample in ["Quit","quit"]:
+                quit = True
+                break
+            sample = sample.split(",")
+            if len(sample) != cycle_length:
+                print(f"You should have a total of {cycle_length} shifts. You only entered {len(sample)}!")
+                print("Please enter the shifts in sequence, seperated by commas!")
+                print("Example: In1,In2,Out1,Out2")
+                print(f"Your current shifts are : {sample}")
+                continue      
+            break
+
+        if quit:
+            print("Quitting!")
+            return
+        
+        #get the non working days
+        while True:
+            outshifts = input("What are the non working days? Enter the shifts seperated by commas. E.g. out1,out2: ")
+            if outshifts in ["Quit","quit"]:
+                quit = True
+                break
+            outshifts = outshifts.split(",")
+            if len(outshifts) != outcamp:
+                print(f"You should have a total of {outcamp} out days. You entered {len(outshifts)}!")
+                print("Please enter the shifts seperated by commas!")
+                print("Example: Out1,Out2")
+                print(f"Your current shifts are : {outshifts}")
+                continue
+            if not(set(outshifts) <= set(sample)): #check if elements in outshifts match those in sample
+                print("Your shifts do not match!")
+                print(f"Your shift cycle: {sample}")
+                print(f"Your non working shifts{outshifts}")
+                continue
+            break
+
+        self.shiftcycle = sample
+        self.outcampshifts = outshifts
+
     def calculate_shift(self): 
         '''
-        status_on_first_day = S1,S2,M1,M2,D1,D2 in str format
+            calculates shifts
         '''
-        
-        sample = ["S1","S2","M1","M2","D1","D2"]
-        startIdx = 0
-
+        quit = False
+        self.get_shift_info()
         #ask for user input on first shift day
+        startIdx = 0
         while True:
             first = input(f"what is the shift on the first day {self.start_date}?: ")
-
-            if first not in sample:
-                print("shift does not exist, try: S1,S2,M1,M2,D1,D2")
+            if first in ["Quit","quit"]:
+                quit = True
+                break
+            if first not in self.shiftcycle:
+                print(f"shift does not exist, try: {self.shiftcycle}")
                 continue
             else:
-                startIdx = sample.index(first) #set the first index
+                startIdx = self.shiftcycle.index(first) #set the first index
                 break
+        
+        if quit:
+            print("Quitting")
+            return
+    
         #rotate list to start with first day
-        status = sample[startIdx:]+sample[:startIdx]
+        
+        status = self.shiftcycle[startIdx:]+self.shiftcycle[:startIdx]
         status = cycle(status) #convert to itertable to use next() function
         
         df = self.data.copy()
@@ -80,7 +156,7 @@ class Calendar():
         for i in range(len(self.data.loc[pd.to_datetime(date):])):
             d = self.data.index[i].date() #get the datetime obj
             day,shift = self.data.iloc[i]
-            if shift not in ["D1","D2"]: #if it is a working day
+            if shift not in self.outcampshifts: #if it is a working day
                 day_data[day] += 1
                 working_days += 1
                 if d in sg_holidays:
