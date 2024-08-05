@@ -3,6 +3,7 @@ from tkinter import messagebox
 from calculator import Calculator as Calc
 from tkinter import simpledialog
 from tkinter import ttk
+from tkinter import font
 from tkcalendar import Calendar,DateEntry
 
 class calculatorGUI:
@@ -15,25 +16,23 @@ class calculatorGUI:
 
         #button to get start date
         self.start_date_var = tk.StringVar(self.root, value="Not set")
-        tk.Label(self.root, textvariable=self.start_date_var).pack()
+        start_label = tk.Label(self.root, textvariable=self.start_date_var, font=("Arial",15)).pack()
         ttk.Button(self.root, text="Start Date", command=lambda:self.getdate(setfor="start")).pack()
-
         #button to get end date
         self.end_date_var = tk.StringVar(self.root, value = "Not set")
-        tk.Label(self.root, textvariable=self.end_date_var).pack()
+        end_label = tk.Label(self.root, textvariable=self.end_date_var, font=("Arial",15)).pack()
         ttk.Button(self.root, text="End Date", command=lambda:self.getdate(setfor="end")).pack()
-        
 
         #gets shifts
         label = tk.Label(self.root,text="Days In", font=('Arial',18))
         label.config(bg="green") # set label background or foreground color --> "fg = green"
-        label.pack(padx=10)
+        label.pack(pady = 5)
         self.days_in = tk.Entry(self.root, font=("Arial",18))
-        self.days_in.pack()
+        self.days_in.pack(anchor=tk.CENTER)
 
         label = tk.Label(self.root,text="Days Out", font=('Arial',18))
         label.config(bg="green") # set label background or foreground color --> "fg = green"
-        label.pack(padx=10)
+        label.pack(pady=5)
         self.days_out = tk.Entry(self.root, font=("Arial",18))
         self.days_out.pack()
 
@@ -61,8 +60,8 @@ class calculatorGUI:
 
         #button which calculates working days from a desired start date to end date
         self.calc_working_days = tk.Button(self.root,text = "Calculate working days",font=("Arial",18), command=self.calc_wd)
+        self.calc_working_days.config(bg="green")
         self.calc_working_days.pack()
-
 
         self.root.mainloop() #display the gui
 
@@ -95,6 +94,7 @@ class calculatorGUI:
                     messagebox.showerror(title="Error", message= f"{self.user_input} is out of range of \n start date: {self.start_date} \n end date: {self.end_date}")
                     return
                 str1,str2,data = self.calculator.calc_working_days(self.user_input)
+                print(data.columns)
                 self.show_dataframe(str1,str2,data)
 
         top = tk.Toplevel(self.root) #create separate window
@@ -106,22 +106,36 @@ class calculatorGUI:
     def calc_wd(self):
         #show a pop up asking for a start date
         self.getdate(setfor="user_input") 
-    
+
     def show_dataframe(self, str1,str2,data):
-        # Create a new window
+
+        
+        #Create a new window
         display_window = tk.Toplevel(self.root)
         display_window.title(str1)
 
-        # Create a Text widget to display the tabulated DataFrame
-        text_widget = tk.Text(display_window, wrap='none')
-        text_widget.pack(expand=True, fill='both')
+        tk.Label(display_window, text=str2).pack()
+        
+        #Create treeview widget
+        tree = ttk.Treeview(display_window, columns=list(data.columns), show="headings")
+        style = ttk.Style()
+        style.configure("Treeview", background="black", foreground="white")
+        style.configure("Treeview.Heading", background="black", foreground="yellow")
+        tree.pack(expand=True, fill = 'both')
 
-        # Insert the formatted string into the Text widget
-        text_widget.insert('1.0',str2)
-        text_widget.insert('1.0', "\n")
-        text_widget.insert('1.0', data) 
-        text_widget.config(state='disabled')  # Make the Text widget read-only
+        #Define column headings:
+        for col in data.columns:
+            tree.heading(col, text = col)
+            tree.column(col, width = 100, anchor="w")
+
+        #Insert data into Treeview window
+        for _, row in data.iterrows():
+            tree.insert("","end", values = list(row))
+
+
+        
     
+
     def input_check(self):
         '''
             Checks for valid user inputs. Prints an error message for invalid inputs
@@ -183,7 +197,7 @@ class calculatorGUI:
         if len(final_outshifts) != dout:
             messagebox.showerror(title="Error", message=f"Your outshift days: {final_outshifts} do not match your days out: {dout}.")
             return
-        if not final_outshifts <= final_shift_names:
+        if not set(final_outshifts) <= set(final_shift_names):
             messagebox.showerror(title="Error", message=f"Your outshift days: {final_outshifts} do not match your shift names: {final_shift_names}.")
             return
         

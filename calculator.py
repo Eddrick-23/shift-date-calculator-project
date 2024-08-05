@@ -85,5 +85,5 @@ class Calculator():
         s1 = (f"From {date} to {self.data.index[-1].date()}")
         s2 = (f'Total:{working_days+non_working}, working:{working_days}, non working :{non_working}, Working on Public Holidays: {ph_working_days}')
         
-        return s1,s2,tabulate(sorted_df,headers=["Day","Freq","PH Freq","Public Holidays"], tablefmt='grid', showindex=False)
+        return s1,s2,sorted_df
 
