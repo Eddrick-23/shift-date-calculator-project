@@ -3,8 +3,6 @@ from datetime import datetime
 from itertools import cycle
 from collections import defaultdict
 import holidays
-from tabulate import tabulate
-
 #calculator class used for GUI pyscript
 
 class Calculator():
@@ -47,13 +45,14 @@ class Calculator():
         df["shifts"] = shifts
         self.data = df
 
-    def show_shift_on_date(self,date): 
+    def get_shift_on_date(self,date): 
         
         '''
         shows the shift on a specific date. Input to be in 'YYYY-MM-DD' format
         '''
-        bar = self.data.loc[pd.to_datetime(date)].to_frame()
-        return bar
+        day = self.data.loc[pd.to_datetime(date),"day"]
+        shift = self.data.loc[pd.to_datetime(date),"shifts"]
+        return day,shift
     
     def calc_working_days(self,date): 
         '''
