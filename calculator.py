@@ -46,6 +46,14 @@ class Calculator():
             shifts.append(next(status))
         df["shifts"] = shifts
         self.data = df
+
+    def show_shift_on_date(self,date): 
+        
+        '''
+        shows the shift on a specific date. Input to be in 'YYYY-MM-DD' format
+        '''
+        bar = self.data.loc[pd.to_datetime(date)].to_frame()
+        return bar
     
     def calc_working_days(self,date): 
         '''

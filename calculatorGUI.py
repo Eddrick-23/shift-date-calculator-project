@@ -5,22 +5,23 @@ from tkinter import simpledialog
 from tkinter import ttk
 from tkinter import font
 from tkcalendar import Calendar,DateEntry
+from tabulate import tabulate
 
 class calculatorGUI:
 
     def __init__(self):
         self.root = tk.Tk()
-        self.root.geometry("800x500")
+        self.root.geometry("800x550")
         s = ttk.Style(self.root)
         s.theme_use('clam')
 
         #button to get start date
         self.start_date_var = tk.StringVar(self.root, value="Not set")
-        start_label = tk.Label(self.root, textvariable=self.start_date_var, font=("Arial",15)).pack()
+        tk.Label(self.root, textvariable=self.start_date_var, font=("Arial",15)).pack()
         ttk.Button(self.root, text="Start Date", command=lambda:self.getdate(setfor="start")).pack()
         #button to get end date
         self.end_date_var = tk.StringVar(self.root, value = "Not set")
-        end_label = tk.Label(self.root, textvariable=self.end_date_var, font=("Arial",15)).pack()
+        tk.Label(self.root, textvariable=self.end_date_var, font=("Arial",15)).pack()
         ttk.Button(self.root, text="End Date", command=lambda:self.getdate(setfor="end")).pack()
 
         #gets shifts
@@ -60,8 +61,11 @@ class calculatorGUI:
 
         #button which calculates working days from a desired start date to end date
         self.calc_working_days = tk.Button(self.root,text = "Calculate working days",font=("Arial",18), command=self.calc_wd)
-        self.calc_working_days.config(bg="green")
         self.calc_working_days.pack()
+
+        #button to get shift on a specific date
+        self.get_shift_on_date = tk.Button(self.root, text="Get shift on date", font=("Arial",18), command=self.query_shift)
+        self.get_shift_on_date.pack()
 
         self.root.mainloop() #display the gui
 
@@ -96,13 +100,28 @@ class calculatorGUI:
                 str1,str2,data = self.calculator.calc_working_days(self.user_input)
                 print(data.columns)
                 self.show_dataframe(str1,str2,data)
+            elif setfor == "query":
+                print("user input:", cal.selection_get())
+                self.user_input = cal.selection_get()
+
+                if self.user_input < self.start_date or self.user_input > self.end_date:
+                    messagebox.showerror(title="Error", message= f"{self.user_input} is out of range of \n start date: {self.start_date} \n end date: {self.end_date}")
+                    return
+                bar = self.calculator.show_shift_on_date(self.user_input)
+
+                messagebox.showinfo("Query", message=tabulate(bar, headers=["Day","Shift"],tablefmt="psql"))
+                
+
 
         top = tk.Toplevel(self.root) #create separate window
         cal = Calendar(top, font = ("Arial",14), selectmode = "day", cursor = "hand1", year = 2024, month = 1,day = 1)
         cal.pack(fill = "both", expand = True)
         ttk.Button(top, text = "ok", command=lambda:set_sel(setfor)).pack()
         
-        
+    def query_shift(self):
+        self.getdate(setfor="query")
+
+
     def calc_wd(self):
         #show a pop up asking for a start date
         self.getdate(setfor="user_input") 
