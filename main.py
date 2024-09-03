@@ -1,7 +1,6 @@
 # run calculator on website using streamlit
 
 import streamlit as st
-from tornado.options import options
 
 from calculator import Calculator as Calc
 
