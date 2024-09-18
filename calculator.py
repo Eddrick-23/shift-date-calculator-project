@@ -63,7 +63,7 @@ class Calculator():
         day_data = defaultdict(int)
         working_days = 0
         working_public_hols = defaultdict(int)
-        working_public_hols_name = defaultdict(list)
+        working_public_hols_name = {"Monday":[],"Tuesday":[],"Wednesday":[],"Thursday":[],"Friday":[],"Saturday":[],"Sunday":[]}
         non_working = 0
         ph_working_days = 0
         for i in range(len(self.data.loc[pd.to_datetime(date):])):
@@ -79,6 +79,11 @@ class Calculator():
             else:
                 non_working += 1
         #dataframe consisting of working days for each date
+        # print(working_public_hols_name.keys())
+        for d in working_public_hols_name.keys():
+            value = working_public_hols_name[d]
+            if not value:
+                working_public_hols_name[d] = ["None"]
         df = pd.DataFrame(day_data.items(), columns= ["Days","Days Working"])
         custom_order = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
         df['Days'] = pd.Categorical(df['Days'], categories=custom_order, ordered=True)
@@ -94,3 +99,13 @@ class Calculator():
         
         return s1,s2,sorted_df
 
+if __name__ == "__main__":
+    shifts = "S1,S2,M1,M2,D1,D2"
+    outCamp = "D1,D2"
+    day1 = "S1"
+    calc = Calculator(start_date="2023-08-21",end_date="2025-01-27",daysIn=4,daysOut=2,shiftcycle=shifts,outcampshifts=outCamp,d1shift=day1)
+    calc.calculate_shift()
+    string1,string2,df =  calc.calc_working_days("2023-08-21")
+    print(string2)
+    print(df)
+    print(calc.get_shift_on_date("2024-09-18"))

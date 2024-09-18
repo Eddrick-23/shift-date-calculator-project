@@ -64,9 +64,10 @@ if "calculator" in st.session_state:
     fromDate = st.date_input("Start date", format="DD/MM/YYYY", min_value=start_date, max_value=end_date)
     if st.button("Calculate Working days"):
         s1, s2, sorted_df = st.session_state.calculator.calc_working_days(fromDate)
+        print(sorted_df)
         st.write(s1)
         st.write(s2)
-        st.write(sorted_df)
+        st.dataframe(sorted_df)
 
 
 
