@@ -1,9 +1,8 @@
 import pandas as pd
 from datetime import datetime
 from itertools import cycle
-from collections import defaultdict
 import holidays
-#calculator class used for GUI pyscript
+#calculator class used for GUI pyscript and website
 
 class Calculator():
     def __init__(self, start_date, end_date, daysIn,daysOut,shiftcycle,outcampshifts, d1shift):
@@ -60,9 +59,9 @@ class Calculator():
         date input to be in 'YYYY-MM-DD' format
         '''
         sg_holidays = holidays.country_holidays("SG") #to check public holidays for later
-        day_data = defaultdict(int)
+        day_data = {"Monday":0,"Tuesday":0,"Wednesday":0,"Thursday":0,"Friday":0,"Saturday":0,"Sunday":0}
         working_days = 0
-        working_public_hols = defaultdict(int)
+        working_public_hols = {"Monday":0,"Tuesday":0,"Wednesday":0,"Thursday":0,"Friday":0,"Saturday":0,"Sunday":0}
         working_public_hols_name = {"Monday":[],"Tuesday":[],"Wednesday":[],"Thursday":[],"Friday":[],"Saturday":[],"Sunday":[]}
         non_working = 0
         ph_working_days = 0
@@ -105,7 +104,7 @@ if __name__ == "__main__":
     day1 = "S1"
     calc = Calculator(start_date="2023-08-21",end_date="2025-01-27",daysIn=4,daysOut=2,shiftcycle=shifts,outcampshifts=outCamp,d1shift=day1)
     calc.calculate_shift()
-    string1,string2,df =  calc.calc_working_days("2023-08-21")
+    string1,string2,df =  calc.calc_working_days("2025-01-21")
     print(string2)
     print(df)
     print(calc.get_shift_on_date("2024-09-18"))
