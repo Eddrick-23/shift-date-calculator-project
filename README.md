@@ -1,8 +1,7 @@
 # shift-date-calculator-project
 
 ## Overview
-This is a project aimed for calculating different shift cycles from the more common 5 in 2 out cycles in National Service.
-
+Calculate your working/non-working days if you are not under 5 in 2 out cycles 🫡
 ## Features
 Calculates shifts for any X in X out Shift cycle using a python GUI or [Website](https://shiftcalculator.streamlit.app/).
 Calculates total days in form of working, non working and working days that fall on public holidays.
