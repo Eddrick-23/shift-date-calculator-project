@@ -94,9 +94,8 @@ class Calculator():
         sorted_df = sorted_df.merge(df_holNames, on="Days", how = "left").fillna("None")
 
         s1 = (f"From {date} to {self.data.index[-1].date()}")
-        s2 = (f'Total:{working_days+non_working}, working:{working_days}, non working :{non_working}, Working on Public Holidays: {ph_working_days}')
-        
-        return s1,s2,sorted_df
+        dict2 = {"Total":working_days+non_working, "working":working_days,"non working": non_working,"Working on Public Holidays": ph_working_days}
+        return s1,dict2,sorted_df
 
 if __name__ == "__main__":
     shifts = "S1,S2,M1,M2,D1,D2"
